@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Barangay Blotter Management System - Resident Dashboard</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="logo">B</div>
+      <div>
+        <h1>Barangay Blotter<br>Management System</h1>
+        <small>Resident Portal</small>
+      </div>
+    </div>
+    <nav class="nav">
+      <button class="active" data-view="dashboard">🏠 Dashboard</button>
+      <button data-view="file">📝 File a Blotter Report</button>
+      <button data-view="reports">📂 My Reports</button>
+      <button data-view="profile">👤 My Profile</button>
+    </nav>
+    <div class="sidebar-foot">
+      <strong id="sideName">Resident</strong>
+      <span id="sideAddr">Complete your profile</span>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex;gap:12px;align-items:center">
+        <button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+        <h2 id="pageTitle">Dashboard</h2>
+      </div>
+      <span class="date-chip" id="today"></span>
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <section class="view active" id="view-dashboard">
+        <div class="card welcome">
+          <h3 id="welcomeTitle">Welcome, Resident!</h3>
+          <p>Report incidents in your barangay and track the status of your blotter reports in one place.</p>
+          <button class="btn accent" data-go="file">+ File a New Report</button>
+        </div>
+
+        <div class="stats">
+          <div class="stat"><div class="num" id="stTotal">0</div><div class="lbl">Total Reports</div></div>
+          <div class="stat pending"><div class="num" id="stPending">0</div><div class="lbl">Pending</div></div>
+          <div class="stat investigating"><div class="num" id="stInv">0</div><div class="lbl">Under Investigation</div></div>
+          <div class="stat resolved"><div class="num" id="stRes">0</div><div class="lbl">Resolved</div></div>
+        </div>
+
+        <div class="card">
+          <h3>Recent Reports</h3>
+          <p class="sub">Your five most recently filed blotter entries.</p>
+          <div id="recentList"></div>
+        </div>
+      </section>
+
+      <!-- FILE REPORT -->
+      <section class="view" id="view-file">
+        <div class="card">
+          <h3 id="formTitle">File a Blotter Report</h3>
+          <p class="sub">Provide accurate details. Reports are reviewed by the barangay officials.</p>
+          <div class="notice">⚠️ Filing false reports may result in legal consequences. For emergencies, call 911 or your barangay hotline immediately.</div>
+
+          <form id="reportForm" novalidate>
+            <input type="hidden" id="editId">
+            <div class="form-grid">
+              <div class="field">
+                <label for="incidentType">Incident Type <span>*</span></label>
+                <select id="incidentType" required>
+                  <option value="">-- Select type --</option>
+                  <option>Noise Complaint</option>
+                  <option>Physical Altercation</option>
+                  <option>Theft / Robbery</option>
+                  <option>Property Damage</option>
+                  <option>Domestic Dispute</option>
+                  <option>Verbal Abuse / Harassment</option>
+                  <option>Trespassing</option>
+                  <option>Boundary Dispute</option>
+                  <option>Illegal Activity</option>
+                  <option>Lost Item / Person</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="location">Incident Location <span>*</span></label>
+                <input id="location" type="text" placeholder="Street / Purok / Landmark" required>
+              </div>
+              <div class="field">
+                <label for="incidentDate">Date of Incident <span>*</span></label>
+                <input id="incidentDate" type="date" required>
+              </div>
+              <div class="field">
+                <label for="incidentTime">Time of Incident <span>*</span></label>
+                <input id="incidentTime" type="time" required>
+              </div>
+              <div class="field">
+                <label for="respondent">Person(s) Complained Against</label>
+                <input id="respondent" type="text" placeholder="Name(s) or description, if known">
+              </div>
+              <div class="field">
+                <label for="witnesses">Witness(es)</label>
+                <input id="witnesses" type="text" placeholder="Name(s) of witnesses, if any">
+              </div>
+              <div class="field full">
+                <label for="narrative">Narrative of the Incident <span>*</span></label>
+                <textarea id="narrative" placeholder="Describe what happened — who, what, when, where, and how." required></textarea>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn" id="submitBtn">Submit Report</button>
+              <button type="button" class="btn ghost" id="resetBtn">Clear</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- MY REPORTS -->
+      <section class="view" id="view-reports">
+        <div class="card">
+          <h3>My Blotter Reports</h3>
+          <p class="sub">Search, view, edit (while pending) or withdraw your reports.</p>
+          <div class="toolbar">
+            <input type="search" id="search" placeholder="Search by reference no., type or location...">
+            <select id="filterStatus">
+              <option value="">All Status</option>
+              <option>Pending</option>
+              <option>Under Investigation</option>
+              <option>Resolved</option>
+              <option>Withdrawn</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Ref No.</th><th>Incident</th><th>Location</th><th>Date</th><th>Status</th><th>Actions</th></tr>
+              </thead>
+              <tbody id="reportRows"></tbody>
+            </table>
+          </div>
+          <div class="empty" id="emptyState" style="display:none">
+            <div class="icon">📭</div>
+            <p>No reports found.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- PROFILE -->
+      <section class="view" id="view-profile">
+        <div class="card">
+          <h3>My Profile</h3>
+          <p class="sub">Your details are attached to every report you file. Stored only in this browser.</p>
+          <form id="profileForm">
+            <div class="form-grid">
+              <div class="field">
+                <label for="pName">Full Name <span>*</span></label>
+                <input id="pName" type="text" required placeholder="Juan Dela Cruz">
+              </div>
+              <div class="field">
+                <label for="pContact">Contact Number <span>*</span></label>
+                <input id="pContact" type="tel" required placeholder="09XXXXXXXXX">
+              </div>
+              <div class="field">
+                <label for="pAge">Age</label>
+                <input id="pAge" type="number" min="1" max="120">
+              </div>
+              <div class="field">
+                <label for="pGender">Gender</label>
+                <select id="pGender">
+                  <option value="">-- Select --</option>
+                  <option>Male</option><option>Female</option><option>Prefer not to say</option>
+                </select>
+              </div>
+              <div class="field full">
+                <label for="pAddress">Home Address <span>*</span></label>
+                <input id="pAddress" type="text" required placeholder="House No., Street, Purok / Zone">
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn" type="submit">Save Profile</button>
+              <button class="btn danger" type="button" id="clearData">Clear All My Data</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal" role="dialog" aria-modal="true">
+    <header>
+      <h3 id="mTitle">Report Details</h3>
+      <button class="close" id="mClose" aria-label="Close">&times;</button>
+    </header>
+    <dl class="detail" id="mBody"></dl>
+    <ul class="timeline" id="mTimeline"></ul>
+    <div class="form-actions">
+      <button class="btn ghost" onclick="window.print()">🖨 Print</button>
+      <button class="btn ghost" id="mDone">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- Storage helpers ---------- */
+const KEY_REPORTS = "bbms_reports";
+const KEY_PROFILE = "bbms_profile";
+const KEY_COUNTER = "bbms_counter";
+
+const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
+const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+
+let reports = load(KEY_REPORTS, []);
+let profile = load(KEY_PROFILE, {});
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const statusClass = s => ({"Pending":"pending","Under Investigation":"investigating","Resolved":"resolved","Withdrawn":"withdrawn"}[s]);
+const fmtDate = d => d ? new Date(d + (d.length === 10 ? "T00:00" : "")).toLocaleDateString("en-PH",{year:"numeric",month:"short",day:"numeric"}) : "";
+const fmtStamp = iso => new Date(iso).toLocaleString("en-PH",{dateStyle:"medium",timeStyle:"short"});
+const fmtTime = t => { if(!t) return ""; const [h,m]=t.split(":"); const hr=+h; return `${hr%12||12}:${m} ${hr>=12?"PM":"AM"}`; };
+
+function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2400); }
+
+/* ---------- Navigation ---------- */
+const titles = {dashboard:"Dashboard", file:"File a Blotter Report", reports:"My Reports", profile:"My Profile"};
+function go(view){
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  $("view-"+view).classList.add("active");
+  document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active", b.dataset.view===view));
+  $("pageTitle").textContent = titles[view];
+  $("sidebar").classList.remove("open");
+  if(view==="file" && !$("editId").value) resetForm();
+  if(view==="reports") renderTable();
+  if(view==="dashboard") renderDashboard();
+  window.scrollTo(0,0);
+}
+document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>go(b.dataset.view)));
+document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>go(b.dataset.go)));
+$("menuBtn").addEventListener("click",()=>$("sidebar").classList.toggle("open"));
+
+/* ---------- Dashboard ---------- */
+function renderDashboard(){
+  $("stTotal").textContent = reports.length;
+  $("stPending").textContent = reports.filter(r=>r.status==="Pending").length;
+  $("stInv").textContent = reports.filter(r=>r.status==="Under Investigation").length;
+  $("stRes").textContent = reports.filter(r=>r.status==="Resolved").length;
+
+  const first = (profile.name||"").split(" ")[0];
+  $("welcomeTitle").textContent = first ? `Welcome, ${first}!` : "Welcome, Resident!";
+  $("sideName").textContent = profile.name || "Resident";
+  $("sideAddr").textContent = profile.address || "Complete your profile";
+
+  const recent = [...reports].sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).slice(0,5);
+  $("recentList").innerHTML = recent.length ? recent.map(r=>`
+    <div class="recent-item">
+      <div><strong>${esc(r.type)}</strong><br><small>${esc(r.ref)} · ${esc(r.location)} · ${fmtDate(r.date)}</small></div>
+      <span class="badge ${statusClass(r.status)}">${esc(r.status)}</span>
+    </div>`).join("") : `<div class="empty"><div class="icon">📭</div><p>You haven't filed any reports yet.</p></div>`;
+}
+
+/* ---------- File / edit report ---------- */
+function resetForm(){
+  $("reportForm").reset();
+  $("editId").value = "";
+  $("formTitle").textContent = "File a Blotter Report";
+  $("submitBtn").textContent = "Submit Report";
+  const now = new Date();
+  $("incidentDate").value = now.toISOString().slice(0,10);
+  $("incidentDate").max = now.toISOString().slice(0,10);
+  $("incidentTime").value = now.toTimeString().slice(0,5);
+}
+$("resetBtn").addEventListener("click", resetForm);
+
+function nextRef(){
+  const n = (load(KEY_COUNTER, 0) || 0) + 1;
+  save(KEY_COUNTER, n);
+  return `BLT-${new Date().getFullYear()}-${String(n).padStart(4,"0")}`;
+}
+
+$("reportForm").addEventListener("submit", e=>{
+  e.preventDefault();
+  if(!profile.name || !profile.address || !profile.contact){
+    toast("Please complete your profile first.");
+    return go("profile");
+  }
+  const type=$("incidentType").value, loc=$("location").value.trim(),
+        date=$("incidentDate").value, time=$("incidentTime").value, narr=$("narrative").value.trim();
+  if(!type||!loc||!date||!time||!narr) return toast("Please fill in all required fields.");
+
+  const data = {
+    type, location:loc, date, time,
+    respondent:$("respondent").value.trim(),
+    witnesses:$("witnesses").value.trim(),
+    narrative:narr
+  };
+  const editId = $("editId").value;
+  const now = new Date().toISOString();
+
+  if(editId){
+    const r = reports.find(x=>x.id===editId);
+    if(!r || r.status!=="Pending") return toast("Only pending reports can be edited.");
+    Object.assign(r, data);
+    r.history.push({status:"Pending", note:"Report edited by resident", at:now});
+    toast("Report updated.");
+  } else {
+    reports.push({
+      id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+      ref: nextRef(),
+      ...data,
+      complainant:{...profile},
+      status:"Pending",
+      createdAt:now,
+      history:[{status:"Pending", note:"Report filed by resident", at:now}]
+    });
+    toast("Report submitted successfully!");
+  }
+  save(KEY_REPORTS, reports);
+  resetForm();
+  go("reports");
+});
+
+/* ---------- My reports table ---------- */
+function renderTable(){
+  const q = $("search").value.toLowerCase().trim();
+  const st = $("filterStatus").value;
+  const list = reports
+    .filter(r=>!st || r.status===st)
+    .filter(r=>!q || [r.ref,r.type,r.location].join(" ").toLowerCase().includes(q))
+    .sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+
+  $("emptyState").style.display = list.length ? "none" : "block";
+  $("reportRows").innerHTML = list.map(r=>`
+    <tr>
+      <td><strong>${esc(r.ref)}</strong></td>
+      <td>${esc(r.type)}</td>
+      <td>${esc(r.location)}</td>
+      <td>${fmtDate(r.date)}</td>
+      <td><span class="badge ${statusClass(r.status)}">${esc(r.status)}</span></td>
+      <td><div class="actions">
+        <button class="btn sm ghost" onclick="viewReport('${r.id}')">View</button>
+        ${r.status==="Pending" ? `<button class="btn sm ghost" onclick="editReport('${r.id}')">Edit</button>
+        <button class="btn sm danger" onclick="withdrawReport('${r.id}')">Withdraw</button>` : ""}
+      </div></td>
+    </tr>`).join("");
+}
+$("search").addEventListener("input", renderTable);
+$("filterStatus").addEventListener("change", renderTable);
+
+function viewReport(id){
+  const r = reports.find(x=>x.id===id); if(!r) return;
+  $("mTitle").textContent = r.ref;
+  const rows = [
+    ["Status", `<span class="badge ${statusClass(r.status)}">${esc(r.status)}</span>`],
+    ["Incident Type", esc(r.type)],
+    ["Date & Time", `${fmtDate(r.date)} at ${fmtTime(r.time)}`],
+    ["Location", esc(r.location)],
+    ["Complainant", `${esc(r.complainant.name)}<br>${esc(r.complainant.address)}<br>${esc(r.complainant.contact)}`],
+    ["Complained Against", esc(r.respondent) || "—"],
+    ["Witness(es)", esc(r.witnesses) || "—"],
+    ["Narrative", esc(r.narrative)],
+    ["Date Filed", fmtStamp(r.createdAt)]
+  ];
+  $("mBody").innerHTML = rows.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join("");
+  $("mTimeline").innerHTML = [...r.history].reverse().map(h=>
+    `<li><strong>${esc(h.status)}</strong> — ${esc(h.note)}<small>${fmtStamp(h.at)}</small></li>`).join("");
+  $("modalBg").classList.add("show");
+}
+function closeModal(){ $("modalBg").classList.remove("show"); }
+$("mClose").addEventListener("click", closeModal);
+$("mDone").addEventListener("click", closeModal);
+$("modalBg").addEventListener("click", e=>{ if(e.target===$("modalBg")) closeModal(); });
+document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeModal(); });
+
+function editReport(id){
+  const r = reports.find(x=>x.id===id); if(!r||r.status!=="Pending") return;
+  go("file");
+  $("editId").value = r.id;
+  $("formTitle").textContent = "Edit Report " + r.ref;
+  $("submitBtn").textContent = "Save Changes";
+  $("incidentType").value = r.type;
+  $("location").value = r.location;
+  $("incidentDate").value = r.date;
+  $("incidentTime").value = r.time;
+  $("respondent").value = r.respondent;
+  $("witnesses").value = r.witnesses;
+  $("narrative").value = r.narrative;
+}
+
+function withdrawReport(id){
+  const r = reports.find(x=>x.id===id); if(!r||r.status!=="Pending") return;
+  if(!confirm(`Withdraw report ${r.ref}? This cannot be undone.`)) return;
+  r.status = "Withdrawn";
+  r.history.push({status:"Withdrawn", note:"Report withdrawn by resident", at:new Date().toISOString()});
+  save(KEY_REPORTS, reports);
+  renderTable();
+  toast("Report withdrawn.");
+}
+
+/* ---------- Profile ---------- */
+function fillProfile(){
+  $("pName").value = profile.name || "";
+  $("pContact").value = profile.contact || "";
+  $("pAge").value = profile.age || "";
+  $("pGender").value = profile.gender || "";
+  $("pAddress").value = profile.address || "";
+}
+$("profileForm").addEventListener("submit", e=>{
+  e.preventDefault();
+  profile = {
+    name:$("pName").value.trim(),
+    contact:$("pContact").value.trim(),
+    age:$("pAge").value,
+    gender:$("pGender").value,
+    address:$("pAddress").value.trim()
+  };
+  save(KEY_PROFILE, profile);
+  renderDashboard();
+  toast("Profile saved.");
+});
+$("clearData").addEventListener("click", ()=>{
+  if(!confirm("This will delete your profile and ALL reports stored in this browser. Continue?")) return;
+  [KEY_REPORTS,KEY_PROFILE,KEY_COUNTER].forEach(k=>localStorage.removeItem(k));
+  reports=[]; profile={};
+  fillProfile(); renderDashboard(); renderTable();
+  toast("All data cleared.");
+});
+
+/* ---------- Init ---------- */
+$("today").textContent = new Date().toLocaleDateString("en-PH",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+fillProfile();
+resetForm();
+renderDashboard();
+if(!profile.name) setTimeout(()=>toast("Tip: complete your profile before filing a report."),600);
+</script>
+</body>
+</html>
